@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PikPak 年份整理</title>
+  <link rel="stylesheet" href="task.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead"><span class="brand">P<span class="brand-dot">.</span> / 网盘工具</span><span id="connection-badge" class="badge">未连接</span></header>
+    <div id="demo-banner" class="demo-banner" hidden>演示网盘 · 所有操作只作用于示例文件</div>
+    <section class="hero"><div><p class="eyebrow">让文件按年份归位</p><h1>PikPak 年份整理</h1><p class="intro">全盘按年份归档，清理同名重复、小文件和空目录。</p></div><div class="year-mark" aria-hidden="true">20<span>YY</span></div></section>
+    <nav class="steps" aria-label="整理步骤">
+      <button data-view="connect" class="step active"><span>01</span> 连接网盘</button>
+      <button data-view="preview" class="step"><span>02</span> 预览整理</button>
+      <button data-view="result" class="step"><span>03</span> 执行记录</button>
+    </nav>
+    <p id="error" class="error" role="alert" hidden></p>
+    <p id="resume-banner" class="demo-banner" role="status" hidden></p>
+    <div id="progress-box" class="progress-box" hidden><span class="pulse"></span><div><strong id="stage">扫描</strong><p id="progress" aria-live="polite"></p><progress id="progress-bar" aria-label="任务完成进度" max="1" value="0" hidden></progress><div id="progress-metrics" class="progress-metrics" hidden><span id="progress-count"></span><span id="progress-rate"></span><span id="progress-elapsed"></span><span id="progress-eta"></span></div><p id="progress-note" class="field-note" hidden></p></div><button id="stop" class="light">停止任务</button></div>
+    <section id="view-connect" class="view">
+      <div class="connect-grid">
+        <article class="card"><p class="eyebrow">连接你的 PikPak</p><h2>使用个人访问令牌</h2><p class="muted">在 PikPak「账号与安全 → 已连接的应用 → 个人访问令牌」创建令牌，选择「管理文件」权限。</p>
+          <form id="connect-form"><label for="token">个人访问令牌</label><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="仅保留在当前工具页内存中" required><p class="field-note">关闭或刷新此页后需要重新连接。</p><div class="actions"><button id="connect-button" class="primary" type="submit">连接网盘</button><button id="disconnect" type="button" class="light" disabled>断开连接</button></div></form>
+          <p class="footnote">令牌直接发往 PikPak。工具不保存令牌，也不会读取浏览器的登录数据。<a href="https://mypikpak.com/zh-CN/faq" target="_blank" rel="noreferrer">查看官方帮助 ↗</a></p>
+        </article>
+        <aside class="card rules"><p class="eyebrow">本次整理规则</p><h2>整个网盘，按年归档</h2><dl><div><dt>归档</dt><dd>大于 <strong>100MB</strong>，按添加时间归入根目录 /年份/</dd></div><div><dt>去重</dt><dd>同一年份、同名只留一份<br>优先已归档的文件，其次体积较大者</dd></div><div><dt>清理</dt><dd>重复项及 ≤ 100MB 文件移入回收站<br>随后删除已经腾空的旧目录</dd></div><div><dt>边界</dt><dd>100MB = 100,000,000 字节<br>年份以北京时间计算</dd></div></dl><p class="field-note">未知信息或操作失败的对象跳过并保留，其余继续执行。全盘扫描采用最多 4 路并发。</p></aside>
+      </div>
+    </section>
+    <section id="view-preview" class="view" hidden>
+      <div class="section-heading"><div><h2>先看清单，再开始</h2><p class="muted">递归扫描全部目录。扫描和预览不会修改网盘。</p></div><button id="scan" class="primary" disabled>扫描整个网盘</button></div>
+      <div id="stats" class="stats"></div>
+      <div id="issues" class="error" hidden></div>
+      <div class="card list-card"><div class="list-toolbar"><label for="filter">文件清单</label><select id="filter"><option value="all">全部文件</option><option value="move">待移动</option><option value="trash">全部待删除文件</option><option value="duplicate">仅同名重复删除</option><option value="keep">原位保留</option><option value="issue">跳过保留</option><option value="directory">待检查空目录</option></select><button id="export-plan" class="light" disabled>导出完整计划</button></div>
+        <div id="empty" class="empty">连接网盘后扫描，整理清单会显示在这里。</div>
+        <table id="file-table" hidden><thead><tr><th>操作 / 文件</th><th>大小</th><th>添加时间（北京时间）</th><th>目标 / 原因</th></tr></thead><tbody id="rows"></tbody></table>
+        <div class="pagination"><span id="page-info">尚未扫描</span><button id="previous" class="light" disabled>上一页</button><button id="next" class="light" disabled>下一页</button></div>
+      </div>
+      <div id="execution-controls" class="card execute-card" hidden><div><h3>确认这份整理计划</h3><p class="muted">每批最多 50 项，同时处理 2 批；不逐个读文件核验，只跟踪整批任务结果。计划与进度自动保存。</p><label class="check"><input id="confirm" type="checkbox">确认按此清单批量整理，并删除同年份同名重复项</label></div><button id="apply" class="primary" disabled>开始批量整理</button></div>
+    </section>
+    <section id="view-result" class="view" hidden><div class="section-heading"><div><h2>执行记录</h2><p id="result-summary" class="muted">尚未执行整理。任务计划、批次进度和操作记录保存在本机。</p></div><button id="export-log" class="light">导出操作记录</button></div><div class="card"><p class="field-note">显示最近 200 条记录。中断后回到预览继续；刷新后输入同一令牌恢复。已完成批次不会重发，未知结果的批次只核对状态。</p><ol id="log" class="log"><li>暂无操作记录。</li></ol></div></section>
+    <footer>全盘扫描 · 批量执行 · 自动保存 <span>1.0.5 / 个人网盘 / 全部文件类型</span></footer>
+  </main>
+  <script type="module" src="task.mjs"></script>
+</body>
+</html>

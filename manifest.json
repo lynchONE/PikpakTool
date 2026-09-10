@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "PikPak 年份整理",
+  "version": "1.0.5",
+  "description": "全盘预览，将大于 100MB 的文件按添加年份归档，核验后清理小文件与空目录。",
+  "host_permissions": ["https://api-drive.mypikpak.com/*"],
+  "action": { "default_title": "打开 PikPak 年份整理", "default_popup": "launcher.html" },
+  "options_page": "task.html",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://api-drive.mypikpak.com"
+  }
+}

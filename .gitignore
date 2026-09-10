@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.local/
+.migration-backup/
+*.zip
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
